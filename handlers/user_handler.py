@@ -396,7 +396,7 @@ async def process_validate_russian_phone_number(message: Message, state: FSMCont
                    f'<i>Номер телефона:</i> {data["phone"]}\n' \
                    f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
                    f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
-                   f'<i>Есть участок?:</i> {data["land"]}\n' \
+                   f'<i>Рассматриваете строительство?:</i> {data["land"]}\n' \
                    f'<i>Направление:</i> {data["district"]}\n' \
                    f'<i>Тип стен:</i> {data["type_wall"]}\n' \
                    f'<i>Бюджет:</i> {data["budget"]}\n' \
