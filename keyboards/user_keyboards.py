@@ -49,8 +49,7 @@ def keyboard_type_estate_house() -> InlineKeyboardMarkup:
     logging.info("keyboard_type_estate_house")
     button_1 = InlineKeyboardButton(text='Да',  callback_data=f'type_house_Да')
     button_2 = InlineKeyboardButton(text='Нет', callback_data=f'type_house_Нет')
-    button_3 = InlineKeyboardButton(text='В процессе приобретения', callback_data=f'type_house_в процессе приобретения')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2], [button_3]], )
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]], )
     return keyboard
 
 

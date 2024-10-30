@@ -77,8 +77,12 @@ async def type_real_estate(callback: CallbackQuery, state: FSMContext, bot: Bot)
     logging.info(f'type_real_estate {callback.message.chat.id}')
     answer = callback.data.split('_')[-1]
     await state.update_data(payment=answer)
-    await callback.message.edit_text(text=f'Какой тип недвижимости Вы хотите продать?',
-                                     reply_markup=kb.keyboard_type_estate_real())
+    if answer == 'sell':
+        await callback.message.edit_text(text=f'Какой тип недвижимости Вы хотите продать?',
+                                         reply_markup=kb.keyboard_type_estate_real())
+    else:
+        await callback.message.edit_text(text=f'Какой тип недвижимости Вы ищете?',
+                                         reply_markup=kb.keyboard_type_estate_real())
     await callback.answer()
 
 
@@ -95,6 +99,17 @@ async def type_real_estate(callback: CallbackQuery, state: FSMContext, bot: Bot)
     logging.info(f'type_real_estate {callback.message.chat.id}')
     answer = callback.data.split('_')[-1]
     await state.update_data(type=answer)
+    data = await state.get_data()
+    if data['payment'] == 'sell':
+        if answer == 'land':
+            await state.update_data(type_e="Земельный участок")
+        elif answer == 'house':
+            await state.update_data(type_e="Дом")
+        elif answer == 'flat':
+            await state.update_data(type_e="Квартира")
+        await callback.message.answer(text=f'Оставьте номер телефона наш специалист Вам перезвонит',
+                                      reply_markup=kb.keyboard_phone())
+        return
     if answer == 'land':
         await bot.delete_message(chat_id=callback.message.chat.id,
                                  message_id=callback.message.message_id)
@@ -102,7 +117,7 @@ async def type_real_estate(callback: CallbackQuery, state: FSMContext, bot: Bot)
                                       reply_markup=kb.keyboard_type_land())
         await state.update_data(type_e="Земельный участок")
     elif answer == 'house':
-        await callback.message.edit_text(text=f'Есть ли у Вас земельный участок',
+        await callback.message.edit_text(text=f'Рассматриваете строительство?',
                                          reply_markup=kb.keyboard_type_estate_house())
         await state.update_data(type_e="Дом")
     elif answer == 'flat':
@@ -348,34 +363,41 @@ async def process_validate_russian_phone_number(message: Message, state: FSMCont
                          reply_markup=kb.keyboards_start_user())
     data = await state.get_data()
     text = ''
-    if data["type"] == "flat":
+    if data["type"] == "sell":
         text = f'<b>Новая заявка:</b>\n\n' \
                f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
                f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
                f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
                f'<i>Номер телефона:</i> {data["phone"]}'
-    elif data["type"] == "land":
-        text = f'<b>Новая заявка:</b>\n\n' \
-               f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
-               f'<i>Номер телефона:</i> {data["phone"]}\n' \
-               f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
-               f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
-               f'<i>Направление:</i> {data["district"]}\n' \
-               f'<i>Площадь участка:</i> {data["land_area"]} соток\n' \
-               f'<i>Способ оплаты:</i> {data["payment_option"]}\n' \
-               f'<i>Срок покупки:</i> {data["deadline"]}\n'
-    elif data["type"] == "house":
-        text = f'<b>Новая заявка:</b>\n\n' \
-               f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
-               f'<i>Номер телефона:</i> {data["phone"]}\n' \
-               f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
-               f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
-               f'<i>Есть участок?:</i> {data["land"]}\n' \
-               f'<i>Направление:</i> {data["district"]}\n' \
-               f'<i>Тип стен:</i> {data["type_wall"]}\n' \
-               f'<i>Бюджет:</i> {data["budget"]}\n' \
-               f'<i>Способ оплаты:</i> {data["payment_option"]}\n' \
-               f'<i>Срок покупки:</i> {data["deadline"]}\n'
+    else:
+        if data["type"] == "flat":
+            text = f'<b>Новая заявка:</b>\n\n' \
+                   f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
+                   f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
+                   f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
+                   f'<i>Номер телефона:</i> {data["phone"]}'
+        elif data["type"] == "land":
+            text = f'<b>Новая заявка:</b>\n\n' \
+                   f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
+                   f'<i>Номер телефона:</i> {data["phone"]}\n' \
+                   f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
+                   f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
+                   f'<i>Направление:</i> {data["district"]}\n' \
+                   f'<i>Площадь участка:</i> {data["land_area"]} соток\n' \
+                   f'<i>Способ оплаты:</i> {data["payment_option"]}\n' \
+                   f'<i>Срок покупки:</i> {data["deadline"]}\n'
+        elif data["type"] == "house":
+            text = f'<b>Новая заявка:</b>\n\n' \
+                   f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
+                   f'<i>Номер телефона:</i> {data["phone"]}\n' \
+                   f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
+                   f'<i>Тип недвижимости:</i> {data["type_e"]}\n' \
+                   f'<i>Есть участок?:</i> {data["land"]}\n' \
+                   f'<i>Направление:</i> {data["district"]}\n' \
+                   f'<i>Тип стен:</i> {data["type_wall"]}\n' \
+                   f'<i>Бюджет:</i> {data["budget"]}\n' \
+                   f'<i>Способ оплаты:</i> {data["payment_option"]}\n' \
+                   f'<i>Срок покупки:</i> {data["deadline"]}\n'
     await bot.send_message(chat_id=config.tg_bot.channel,
                            text=text)
 
