@@ -111,7 +111,7 @@ async def type_real_estate(callback: CallbackQuery, state: FSMContext, bot: Bot)
             await state.update_data(type_e="Квартира")
         await callback.message.answer(text=f'Оставьте номер телефона наш специалист Вам перезвонит',
                                       reply_markup=kb.keyboard_phone())
-        await state.set_state(await state.set_state(User.phone))
+        await state.set_state(User.phone)
         await callback.answer()
         return
     if answer == 'land':
