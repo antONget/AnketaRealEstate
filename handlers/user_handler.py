@@ -367,7 +367,7 @@ async def process_validate_russian_phone_number(message: Message, state: FSMCont
                          reply_markup=kb.keyboards_start_user())
     data = await state.get_data()
     text = ''
-    if data["type"] == "sell":
+    if data["payment"] == "sell":
         text = f'<b>Новая заявка:</b>\n\n' \
                f'<i>Пользователь:</i> @{message.from_user.username if message.from_user.username else "Ник не указан"}/{message.chat.id}\n' \
                f'<i>Тип заявки:</i> {"Покупка" if data["payment"] == "bay" else "Продажа"}\n' \
